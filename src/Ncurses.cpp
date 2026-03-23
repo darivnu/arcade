@@ -141,3 +141,6 @@ void Ncurses::drawBorder()
       attroff(pair);                                                                                                                                                                          
   }
 
+    extern "C" IDisplayModule* create()        { return new Ncurses(); }
+    extern "C" void destroy(IDisplayModule* p) { delete p; }  
+
