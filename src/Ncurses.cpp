@@ -95,6 +95,11 @@ EventType Ncurses::pollEvents()
     }  
 }
 
+void Ncurses::drawText(const std::string &text, int x, int y)
+{
+    mvprintw(y + _originY, x + _originX, "%s", text.c_str());
+}
+
 void Ncurses::draw()
 {
     int termW = getNcurseWidth();
