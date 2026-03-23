@@ -12,7 +12,7 @@
 #include <iostream>
 
 
-/* DON'T CHANGE!!*/
+/* DON'T TOUCH!! */
 class IGameModule
 {
     protected:
@@ -33,6 +33,9 @@ class IGameModule
 
         virtual unsigned int get_score() = 0; //get the current score of the game
         virtual void set_score(unsigned int score) = 0; //set the current score of the game
+
+        virtual unsigned int get_highscore() = 0; //get the current highscore of the game
+        virtual void set_highscore(unsigned int highscore) = 0; //set the current
 
         virtual bool get_gameover() = 0; //get whether the game is over or not
 };

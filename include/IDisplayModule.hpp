@@ -45,7 +45,7 @@ enum Color {
 const int HEIGHT = 40;
 const int WIDTH = 60;
 
-/* DON'T CHANGE!!*/
+/* DON'T TOUCH!! */
 class IDisplayModule {
     public:
         virtual ~IDisplayModule() = default;
