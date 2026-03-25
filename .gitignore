@@ -1,0 +1,49 @@
+*.out
+*.o
+*.so
+*.log
+*.tmp
+*.a
+*test*
+arcade
+*.json
+
+# Build artifacts
+build/
+build-*/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+compile_commands.json
+*.o
+*.obj
+*.lo
+*.la
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+*.out
+
+# generated files
+*.d
+*.gcno
+*.gcda
+*.gcov
+
+# debug / profiling
+*.prof
+*.gprof
+core
+vgcore.*
+
+# ide / editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# others
+doc/
