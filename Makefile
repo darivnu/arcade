@@ -27,7 +27,7 @@ SHARED_FLAGS = -shared -fPIC
 LIB_DIR = lib/game_lib lib/graphical_lib
 
 CC = clang++
-CFLAGS = -Wall -Wextra -g -Iinclude
+CFLAGS = -Wall -Wextra -g -Iinclude -std=c++17
 
 all: $(NAME) libs
 
