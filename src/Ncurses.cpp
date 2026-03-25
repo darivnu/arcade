@@ -95,9 +95,11 @@ EventType Ncurses::pollEvents()
     }  
 }
 
-void Ncurses::drawText(const std::string &text, int x, int y)
+void Ncurses::drawText(const std::string& text, Color color, int x, int y)
 {
+    attron(COLOR_PAIR(get_color_pair(color)));
     mvprintw(y + _originY, x + _originX, "%s", text.c_str());
+    attroff(COLOR_PAIR(get_color_pair(color)));
 }
 
 void Ncurses::draw()
@@ -141,6 +143,17 @@ void Ncurses::drawBorder()
       attroff(pair);                                                                                                                                                                          
   }
 
-    extern "C" IDisplayModule* create()        { return new Ncurses(); }
-    extern "C" void destroy(IDisplayModule* p) { delete p; }  
+  extern "C" {
 
+IDisplayModule* create()
+{
+    return new Ncurses();
+}
+
+void destroy(IDisplayModule* instance)
+{
+    instance->stop(); //we call stop before deleting the instance to make sure we end ncurses mode properly
+    delete instance;
+}
+
+}

@@ -11,8 +11,6 @@
 #include "IDisplayModule.hpp"
 #include <iostream>
 
-
-/* DON'T TOUCH!! */
 class IGameModule
 {
     protected:

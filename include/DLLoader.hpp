@@ -11,7 +11,6 @@
 #include <dlfcn.h>
 #include <stdexcept>
 
-/* DON'T TOUCH!! */
 template <typename T>
 class DLLoader {
     private:
