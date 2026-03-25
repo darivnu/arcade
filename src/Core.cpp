@@ -60,9 +60,12 @@
               launch_game = false;
           }
 
-          _elapsed = game_module->get_elapsed();
-          if (launch_game)
+          if (launch_game) {
+              _elapsed = game_module->get_elapsed();
               _menu = false;
+          } else {
+              _elapsed = _menu_game.get_elapsed();
+          }
       }
 
       if (player_name.empty())
