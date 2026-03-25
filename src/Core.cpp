@@ -113,6 +113,8 @@
 
           graphical_module->draw();
       }
-
-      graphical_module->stop();
+      // Do not call graphical_module->stop() here:
+      // DLLoader's destructor/reset() will invoke the library's destroy()
+      // hook, and current implementations call stop() there. Calling it
+      // again here would double-stop and may crash (e.g., ncurses).
   }
