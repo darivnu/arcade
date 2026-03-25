@@ -22,6 +22,7 @@ void Ncurses::init(void)
     curs_set(0);
     nodelay(stdscr, TRUE);
     start_color();
+    color_init();
 }
 
 void Ncurses::stop(void)
@@ -152,8 +153,22 @@ IDisplayModule* create()
 
 void destroy(IDisplayModule* instance)
 {
-    instance->stop(); //we call stop before deleting the instance to make sure we end ncurses mode properly
+    instance->stop();
     delete instance;
+}
+
+char Ncurses::getInputChar()
+{
+    int ch = getch();
+    if (ch != ERR) {
+        if (ch >= 32 && ch <= 126) {
+            return static_cast<char>(ch);
+        }
+        if (ch == '\n' || ch == 27) {
+            return '\n';
+        }
+    }
+    return '\0';
 }
 
 }
