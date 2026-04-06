@@ -47,3 +47,4 @@ vgcore.*
 
 # others
 doc/
+Dockerfile
