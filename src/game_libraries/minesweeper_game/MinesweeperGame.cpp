@@ -171,6 +171,7 @@ bool MinesweeperGame::checkWin()
 
 void MinesweeperGame::reset_game()
 {
+    _display->clear();
     drawBoard();
     if (_won)
         _display->drawText("YOU WIN! Score: " + std::to_string(_score), GREEN, 1, 1);
