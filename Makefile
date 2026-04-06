@@ -18,7 +18,6 @@ GRAPHICAL_DIRS = \
 	src/graphical_libraries/SFML \
 
 GAME_DIRS = \
-	src/game_libraries/snake_game \
 	src/game_libraries/minesweeper_game \
 
 SHARED_FLAGS = -shared -fPIC
