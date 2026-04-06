@@ -2,9 +2,9 @@
 #include <vector>
 #include <string>
 
-#define MINE_W 20
-#define MINE_H 18
-#define MINE_COUNT 40
+inline constexpr int MINE_W = 20;
+inline constexpr int MINE_H = 18;
+inline constexpr int MINE_COUNT = 40;
 
 class MinesweeperGame : public AGameModule {
     private:
