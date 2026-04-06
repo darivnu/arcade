@@ -52,7 +52,6 @@ void MinesweeperGame::tick(EventType input) {
     if (input == MOUSE_R && !_revealed[_cursorX][_cursorY])
         _flagged[_cursorX][_cursorY] = !_flagged[_cursorX][_cursorY];
     drawBoard();
-    _display->draw();
 }
 
 void MinesweeperGame::exit() {}
