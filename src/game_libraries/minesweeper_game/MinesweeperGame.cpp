@@ -18,7 +18,14 @@ const std::string &MinesweeperGame::getName() const
 
 void MinesweeperGame::tick(EventType input) {
     if (_gameover) {
-        reset_game();
+        drawBoard();
+        if (_won)
+            _display->drawText("YOU WIN! Score: " + std::to_string(_score), GREEN, 1, 1);
+        else
+            _display->drawText("GAME OVER! Score: " + std::to_string(_score), RED, 1, 1);
+        _display->drawText("Press SPACE to restart", WHITE, 1, 2);
+        if (input == SPACE_KEY)
+            reset_game();
         return;
     }
     if (input == W_KEY && _cursorY > 0)
@@ -170,21 +177,8 @@ bool MinesweeperGame::checkWin()
 
 void MinesweeperGame::reset_game()
 {
-    _display->clear();
-    drawBoard();
-    if (_won)
-        _display->drawText("YOU WIN! Score: " + std::to_string(_score), GREEN, 1, 1);
-    if (!_won)
-        _display->drawText("GAME OVER! Score: " + std::to_string(_score), RED, 1, 1);
-    _display->drawText("Press SPACE to restart", WHITE, 1, 2);
-    _display->draw();
-
     if (_score > _highscore)
         _highscore = _score;
-
-    EventType ev = OTHER;
-    while (ev != SPACE_KEY && ev != QUIT && ev != MENU)
-        ev = _display->pollEvents();
 
     initBoard();
     _firstClick = true;
