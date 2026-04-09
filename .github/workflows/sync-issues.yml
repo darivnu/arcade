@@ -1,0 +1,81 @@
+name: Sync issues to public repo
+
+on:
+  issues:
+    types: [opened, edited, closed, reopened, labeled, unlabeled]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PUBLIC_REPO_TOKEN }}
+          script: |
+            const issue = context.payload.issue;
+            const action = context.payload.action;
+            const sourceUrl = issue.html_url;
+
+            const body = `> *Mirrored from the organization repo — [view original](${sourceUrl})*\n\n${issue.body || ''}`;
+
+            if (action === 'opened') {
+              await github.rest.issues.create({
+                owner: 'darivnu',
+                repo: 'arcade',
+                title: issue.title,
+                body,
+                labels: issue.labels.map(l => l.name),
+              });
+            }
+
+            if (action === 'edited') {
+              const { data: issues } = await github.rest.issues.listForRepo({
+                owner: 'darivnu',
+                repo: 'arcade',
+                state: 'all',
+              });
+              const mirror = issues.find(i => i.body && i.body.includes(sourceUrl));
+              if (mirror) {
+                await github.rest.issues.update({
+                  owner: 'darivnu',
+                  repo: 'arcade',
+                  issue_number: mirror.number,
+                  title: issue.title,
+                  body,
+                });
+              }
+            }
+
+            if (action === 'closed') {
+              const { data: issues } = await github.rest.issues.listForRepo({
+                owner: 'darivnu',
+                repo: 'arcade',
+                state: 'open',
+              });
+              const mirror = issues.find(i => i.body && i.body.includes(sourceUrl));
+              if (mirror) {
+                await github.rest.issues.update({
+                  owner: 'darivnu',
+                  repo: 'arcade',
+                  issue_number: mirror.number,
+                  state: 'closed',
+                });
+              }
+            }
+
+            if (action === 'reopened') {
+              const { data: issues } = await github.rest.issues.listForRepo({
+                owner: 'darivnu',
+                repo: 'arcade',
+                state: 'closed',
+              });
+              const mirror = issues.find(i => i.body && i.body.includes(sourceUrl));
+              if (mirror) {
+                await github.rest.issues.update({
+                  owner: 'darivnu',
+                  repo: 'arcade',
+                  issue_number: mirror.number,
+                  state: 'open',
+                });
+              }
+            }

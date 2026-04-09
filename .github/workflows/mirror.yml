@@ -1,0 +1,20 @@
+name: Mirror to public repo
+
+on:
+  push:
+    branches: ['**']
+  delete:
+  create:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Mirror to darivnu/arcade
+        run: |
+          git remote add public https://x-access-token:${{ secrets.PUBLIC_REPO_TOKEN }}@github.com/darivnu/arcade.git
+          git push public --mirror
