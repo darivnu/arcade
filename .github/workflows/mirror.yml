@@ -10,12 +10,13 @@ jobs:
   mirror:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
+      - name: Install git-filter-repo
+        run: pip install git-filter-repo
 
-      - name: Mirror to darivnu/arcade
+      - name: Mirror to darivnu/arcade without workflows
         run: |
-          git remote add public https://x-access-token:${{ secrets.PUBLIC_REPO_TOKEN }}@github.com/darivnu/arcade.git
+          git clone --mirror "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" repo-mirror
+          cd repo-mirror
+          git filter-repo --path .github/workflows/ --invert-paths --force
+          git remote add public "https://x-access-token:${{ secrets.PUBLIC_REPO_TOKEN }}@github.com/darivnu/arcade.git"
           git push public --mirror
