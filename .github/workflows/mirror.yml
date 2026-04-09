@@ -19,4 +19,5 @@ jobs:
           cd repo-mirror
           git filter-repo --path .github/workflows/ --invert-paths --force
           git remote add public "https://x-access-token:${{ secrets.PUBLIC_REPO_TOKEN }}@github.com/darivnu/arcade.git"
-          git push public --mirror
+          git push public --prune 'refs/heads/*:refs/heads/*' --force
+          git push public --prune 'refs/tags/*:refs/tags/*' --force
