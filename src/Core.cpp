@@ -1,120 +1,140 @@
- #include "Core.hpp"
-  #include <chrono>
-  #include <thread>
+/*
+** EPITECH PROJECT, 2026
+** bootstrap_arcade
+** File description:
+** Core
+*/
 
-  Core::Core()
-  {
-      graphical_module = graphical_loader.getInstance();
-      game_module = game_loader.getInstance();
-  }
+#include "Core.hpp"
+#include "IDisplayModule.hpp"
+#include <cstdio>
 
-  void Core::update_event()
-  {
-      EventType event = graphical_module->pollEvents();
-      if (event != OTHER)
-          _lastEvent = event;
-  }
+Core::Core(std::string graphical_lib) :
+    graphical_loader(graphical_lib),
+    game_loader(_currentGameLib),
+    _menu_game(_currentGameLib, graphical_lib)
+{
+    _currentGraphicalLib = graphical_lib;
+}
 
-  void Core::load_new_game(std::string game_path)
-  {
-      _menu_game.update_highscore(game_module->getName(), game_module->get_highscore());
-      game_module->exit();
+void Core::update_event()
+{
+    EventType event = graphical_module->pollEvents();
 
-      game_loader.setHandle(game_path);
-      game_module = game_loader.getInstance();
-      game_module->load_display(graphical_module);
-      _currentGameLib = game_path;
-  }
+    if (event != OTHER)
+        _lastEvent = event;
+}
 
-  void Core::load_new_graphical(std::string graphical_path)
-  {
-      // CRITICAL: do NOT call graphical_module->stop() here manually.
-      // setHandle() → reset() → _destroyFunc() already calls stop() + delete.
-      // Calling stop() first = double-stop = crash.
-      graphical_loader.setHandle(graphical_path);
-      graphical_module = graphical_loader.getInstance();
-      graphical_module->init();
-      game_module->load_display(graphical_module);
-      _menu_game.load_display(graphical_module);
-      _currentGraphicalLib = graphical_path;
-  }
+void Core::go_next_lib(EventType event)
+{
+    if (event == NUM_1 || event == NUM_2) {
+        bool previous = (event == NUM_1);
+        std::string nextGameLib = _menu_game.get_next_game(previous);
+        load_new_game(nextGameLib);
+    }
+    if (event == NUM_3 || event == NUM_4) {
+        bool previous = (event == NUM_3);
+        std::string nextGraphLib = _menu_game.get_next_graphical(previous);
+        load_new_graphical(nextGraphLib);
+    }
+    _lastEvent = OTHER;
+    _elapsed = game_module->get_elapsed();
+    graphical_module->init();
+}
 
-  void Core::menu_handle()
-  {
-      if (_lastEvent == QUIT) {
-          _running = false;
-          return;
-      }
+void Core::run()
+{
+    graphical_module = graphical_loader.getInstance();
+    game_module = game_loader.getInstance();
 
-      _menu_game.tick(_lastEvent);
+    game_module->load_display(graphical_module);
+    _menu_game.load_display(graphical_module);
+    _elapsed = _menu_game.get_elapsed();
+    graphical_module->init();
 
-      auto [game_path, graphical_path] = _menu_game.get_path_chosen();
-      if (!game_path.empty() && !graphical_path.empty()) {
-          bool launch_game = true;
+    while (_running) {
+        update_event();
 
-          if (game_path != _currentGameLib)
-              load_new_game(game_path);
+        if ((_lastEvent == QUIT || _lastEvent == MENU) && !_menu) {
+            _menu = true;
+            _menu_game.update_highscore(game_module->getName(), game_module->get_highscore());
+            _elapsed = _menu_game.get_elapsed();
+            _lastEvent = OTHER;
+        }
+        if (_lastEvent == NUM_1 || _lastEvent == NUM_2 || _lastEvent == NUM_3 || _lastEvent == NUM_4) {
+            go_next_lib(_lastEvent);
+            continue;
+        }
 
-          if (graphical_path != _currentGraphicalLib) {
-              load_new_graphical(graphical_path);
-              launch_game = false;
-          }
+        auto now = std::chrono::steady_clock::now();
+        double elapsed = std::chrono::duration<double, std::milli>(now - _lastMoveTime).count();
+        if (elapsed < _elapsed)
+            continue;
 
-          if (launch_game) {
-              _elapsed = game_module->get_elapsed();
-              _menu = false;
-          } else {
-              _elapsed = _menu_game.get_elapsed();
-          }
-      }
+        if (_menu)
+            menu_handle();
+        else
+            game_module->tick(_lastEvent);
 
-      if (player_name.empty())
-          player_name = _menu_game.get_player_name();
-  }
+        _lastEvent = OTHER;
+        _lastMoveTime = std::chrono::steady_clock::now();
+        graphical_module->draw();
+    }
+}
 
-  void Core::run()
-  {
-      game_module->load_display(graphical_module);
-      _menu_game.load_display(graphical_module);
-      _elapsed = _menu_game.get_elapsed();
-      graphical_module->init();
+void Core::menu_handle()
+{
+    update_event();
+    if (_lastEvent == QUIT) {
+        _menu = false;
+        _running = false;
+        return;
+    }
+    _menu_game.tick(_lastEvent);
+    auto [gameLibPath, graphLibPath] = _menu_game.get_path_chosen();
+    if (gameLibPath != "" && graphLibPath != "") {
+        _menu = false;
+        if (gameLibPath != _currentGameLib)
+            load_new_game(gameLibPath);
+        if (graphLibPath != _currentGraphicalLib) {
+            load_new_graphical(graphLibPath);
+            _menu = true;
+        }
+        _elapsed = game_module->get_elapsed();
+    }
+    if (player_name.empty())
+        player_name = _menu_game.get_player_name();
+}
 
-      _lastMoveTime = std::chrono::steady_clock::now();
+void Core::load_new_game(std::string game_path)
+{
+    _menu_game.update_highscore(game_module->getName(), game_module->get_highscore());
+    game_module->exit();
+    game_loader.reset();
 
-      while (_running) {
-          update_event();
+    try {
+        game_loader.setHandle(game_path);
+        game_module = game_loader.getInstance();
+        game_module->load_display(graphical_module);
+    } catch (const std::exception& e) {
+        throw CoreError("Failed to load game library: " + game_path + " - " + std::string(e.what()));
+    }
+    _currentGameLib = game_path;
+}
 
-          // QUIT or MENU while in game → go to menu first, quit on second press
-          if ((_lastEvent == QUIT || _lastEvent == MENU) && !_menu) {
-              _menu = true;
-              _menu_game.update_highscore(game_module->getName(), game_module->get_highscore());
-              _elapsed = _menu_game.get_elapsed();
-              _lastEvent = OTHER;
-          }
+void Core::load_new_graphical(std::string graphical_path)
+{
+    graphical_module->stop();
+    graphical_loader.reset();
 
-          auto now = std::chrono::steady_clock::now();
-          long ms_passed = std::chrono::duration_cast<std::chrono::milliseconds>(
-              now - _lastMoveTime).count();
-
-          if ((unsigned long)ms_passed < _elapsed) {
-              std::this_thread::sleep_for(std::chrono::milliseconds(_elapsed - ms_passed));
-              continue;
-          }
-
-          graphical_module->clear();
-
-          if (_menu)
-              menu_handle();
-          else
-              game_module->tick(_lastEvent);
-
-          _lastEvent = OTHER;
-          _lastMoveTime = std::chrono::steady_clock::now();
-
-          graphical_module->draw();
-      }
-      // Do not call graphical_module->stop() here:
-      // DLLoader's destructor/reset() will invoke the library's destroy()
-      // hook, and current implementations call stop() there. Calling it
-      // again here would double-stop and may crash (e.g., ncurses).
-  }
+    try {
+        graphical_loader.setHandle(graphical_path);
+        graphical_module = graphical_loader.getInstance();
+        game_module->load_display(graphical_module);
+        _menu_game.load_display(graphical_module);
+    } catch (const std::exception& e) {
+        throw CoreError("Failed to load graphical library: " + graphical_path + " - " + std::string(e.what()));
+    }
+    _currentGraphicalLib = graphical_path;
+    graphical_module->init();
+}

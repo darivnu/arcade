@@ -17,6 +17,7 @@ const std::string &MinesweeperGame::getName() const
 }
 
 void MinesweeperGame::tick(EventType input) {
+    _display->clear();
     if (_gameover) {
         drawBoard();
         if (_won)
