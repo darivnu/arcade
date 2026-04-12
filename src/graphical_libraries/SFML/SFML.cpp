@@ -41,7 +41,7 @@ void SFML_lib::init()
     _window.create(sf::VideoMode(winW, winH), "Arcade - SFML");
     _window.setFramerateLimit(60);
 
-    if (!_font.loadFromFile("assets/font.otf"))
+    if (!_font.loadFromFile("assets/Oswald-Bold.ttf"))
         _font.loadFromFile("assets/AmazDooMLeft.ttf");
 
     _frameBorder.setPosition(19.f, 19.f);
@@ -189,7 +189,7 @@ void SFML_lib::drawText(const std::string &text, Color color, int x, int y)
     sf::Text sfText;
     sfText.setFont(_font);
     sfText.setString(text);
-    sfText.setCharacterSize(14);
+    sfText.setCharacterSize(16);
     sfText.setFillColor(toSfColor(color));
     sfText.setPosition(
         static_cast<float>(_originX + x * static_cast<int>(_tileSize)),
