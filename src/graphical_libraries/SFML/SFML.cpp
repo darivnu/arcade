@@ -32,13 +32,16 @@ SFML_lib::SFML_lib()
 
 void SFML_lib::init()
 {
+    if (_window.isOpen())
+        _window.close();
+
     unsigned int winW = WIDTH  * _tileSize + 40;
     unsigned int winH = HEIGHT * _tileSize + 40;
 
     _window.create(sf::VideoMode(winW, winH), "Arcade - SFML");
     _window.setFramerateLimit(60);
 
-    if (!_font.loadFromFile("assets/font.otf"))
+    if (!_font.loadFromFile("assets/Oswald-Bold.ttf"))
         _font.loadFromFile("assets/AmazDooMLeft.ttf");
 
     _frameBorder.setPosition(19.f, 19.f);
@@ -137,6 +140,22 @@ EventType SFML_lib::pollEvents()
 
 char SFML_lib::getInputChar()
 {
+    // Pump the event queue so TextEntered events populate g_lastInputChar.
+    // This is needed during handle_name_input() which never calls pollEvents().
+    sf::Event event;
+    while (_window.pollEvent(event)) {
+        if (event.type == sf::Event::Closed) {
+            _window.close();
+            break;
+        }
+        if (event.type == sf::Event::TextEntered) {
+            uint32_t c = event.text.unicode;
+            if (c >= 32 && c <= 126)
+                g_lastInputChar = static_cast<char>(c);
+            else if (c == '\r' || c == '\n')
+                g_lastInputChar = '\n';
+        }
+    }
     char c = g_lastInputChar;
     g_lastInputChar = '\0';
     return c;
@@ -170,7 +189,7 @@ void SFML_lib::drawText(const std::string &text, Color color, int x, int y)
     sf::Text sfText;
     sfText.setFont(_font);
     sfText.setString(text);
-    sfText.setCharacterSize(14);
+    sfText.setCharacterSize(16);
     sfText.setFillColor(toSfColor(color));
     sfText.setPosition(
         static_cast<float>(_originX + x * static_cast<int>(_tileSize)),
